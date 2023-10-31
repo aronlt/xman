@@ -11,15 +11,18 @@ mv xman /usr/local/bin
 ## commands
 #### xman mod
 implementing module replacement for the Go language.
-![static/img.png](img.png)
+![tidy](static/tidy.png)
 #### xman push
 automatically complete the local code submission and push the git branch to the remote.
-
+![push](static/push.png)
 #### xman merge
 automatically complete local code submission, merge into the pointed branch, </br> detect conflicts, and push to the remote branch.
 
+
 #### xman stash
 local code temporarily stored (stash).
+![stash](static/stash.png)
 
 #### xman recover
 the stash code is restored interactively
+![recover](static/recover.png)
