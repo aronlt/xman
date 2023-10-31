@@ -11,7 +11,7 @@ mv xman /usr/local/bin
 ## commands
 #### xman mod
 implementing module replacement for the Go language.
-
+![static/img.png](img.png)
 #### xman push
 automatically complete the local code submission and push the git branch to the remote.
 
