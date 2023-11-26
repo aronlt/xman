@@ -11,7 +11,22 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func Stash(_ *cli.Context) error {
+type Stash struct {
+}
+
+func NewStash() *Stash {
+	return &Stash{}
+}
+
+func (s *Stash) Name() string {
+	return "stash"
+}
+
+func (s *Stash) Usage() string {
+	return "暂存当前代码到stash中"
+}
+
+func (s *Stash) Run(_ *cli.Context) error {
 	currentBranch, err := utils.GitCurrentBranch()
 	if err != nil {
 		return terror.Wrap(err, "call gitCurrentBranch fail")
@@ -21,23 +36,6 @@ func Stash(_ *cli.Context) error {
 	err = utils.GitStash(fmt.Sprintf("branch:%s;time:%s;msg:%s", currentBranch, t, msg))
 	if err != nil {
 		return terror.Wrap(err, "call GitStash fail")
-	}
-	return nil
-}
-
-func Recover(_ *cli.Context) error {
-	err := utils.GitCheckDirtyZone()
-	if err != nil {
-		return terror.Wrap(err, "call GitCheckDirtyZone fail")
-	}
-	branch := utils.GetFromStdio("切换的分支")
-	err = utils.GitCheckout(branch)
-	if err != nil {
-		return terror.Wrap(err, "call GitCheckDirtyZone fail")
-	}
-	err = utils.GitStashPop()
-	if err != nil {
-		return terror.Wrap(err, "call GitStashPop fail")
 	}
 	return nil
 }

@@ -1,11 +1,14 @@
 package utils
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/aronlt/toolkit/terror"
+	"github.com/fatih/color"
 )
 
 func GitCheckConflict() error {
@@ -41,7 +44,15 @@ func GitPull(branch string) error {
 	return nil
 }
 
-func GitPush(branch string) error {
+func GitPush(branch string, force ...bool) error {
+	if len(force) == 0 {
+		color.Red("输入y/Y开始推送到远程...")
+		reader := bufio.NewReader(os.Stdin)
+		y, _ := reader.ReadByte()
+		if y != 'y' && y != 'Y' {
+			return nil
+		}
+	}
 	err := RunCmd("git push origin " + branch)
 	if err != nil {
 		return terror.Wrap(err, "run cmd fail")
@@ -82,15 +93,29 @@ func GitStash(msg string) error {
 }
 
 func GitStashPop() error {
+
 	err := RunInteractiveCmd("git", []string{"stash", "list"})
 	if err != nil {
 		return terror.Wrap(err, "call RunInteractiveCmd fail")
 	}
+
+	content, err := RunCmdWithOutput("git stash list")
+	lines := strings.Split(content, "\n")
 	line := GetFromStdio("恢复的行号(下标0开始)")
 	lineNum, err := strconv.Atoi(strings.TrimSpace(line))
 	if err != nil {
 		return terror.Wrap(err, "call strconv.Atoi fail")
 	}
+
+	stashContent := lines[lineNum]
+	start := strings.Index(stashContent, "branch:")
+	end := strings.Index(stashContent, ";")
+	branch := stashContent[start+len("branch:") : end]
+	err = GitCheckout(branch)
+	if err != nil {
+		return terror.Wrap(err, "call GitCheckout fail")
+	}
+
 	err = RunCmd(fmt.Sprintf("git stash pop stash@{%d}", lineNum))
 	if err != nil {
 		return terror.Wrap(err, "call RunCmd fail")
@@ -108,4 +133,19 @@ func GitAddWithConfirm() error {
 		return terror.Wrap(err, "call RunInteractiveCmd fail")
 	}
 	return err
+}
+
+func ListAllBranch() ([]string, error) {
+	content, err := RunCmdWithOutput("git branch")
+	if err != nil {
+		return nil, terror.Wrap(err, "call RunInteractiveCmd fail")
+	}
+	branches := make([]string, 0)
+	lines := strings.Split(content, "\n")
+	for _, line := range lines {
+		line = strings.Trim(line, "*")
+		line = strings.TrimSpace(line)
+		branches = append(branches, line)
+	}
+	return branches, nil
 }

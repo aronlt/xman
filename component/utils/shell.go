@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,7 +10,8 @@ import (
 	"github.com/aronlt/toolkit/terror"
 	"github.com/aronlt/toolkit/tio"
 	"github.com/aronlt/toolkit/tutils"
-	"github.com/fatih/color"
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
 	"github.com/sirupsen/logrus"
 )
 
@@ -84,18 +84,37 @@ func RunCmd(cmd string) error {
 	return err
 }
 
-func WaitForKeyPress() {
-	color.Red("输入任意键继续, 输入Ctl+C退出...")
-	reader := bufio.NewReader(os.Stdin)
-	_, _ = reader.ReadByte()
-}
-
-func GetFromStdio(hint string) string {
-	color.Red("请输入%s:", hint)
-	reader := bufio.NewReader(os.Stdin)
-	content, err := reader.ReadString('\n')
-	if err != nil {
+func GetFromStdio(hint string, words ...string) string {
+	app := tview.NewApplication()
+	inputField := tview.NewInputField().
+		SetLabel(hint + ":").
+		SetFieldWidth(30).
+		SetDoneFunc(func(key tcell.Key) {
+			app.Stop()
+		})
+	inputField.SetAutocompleteFunc(func(currentText string) (entries []string) {
+		if len(currentText) == 0 {
+			return
+		}
+		for _, word := range words {
+			if strings.Contains(strings.ToLower(word), strings.ToLower(currentText)) {
+				entries = append(entries, word)
+			}
+		}
+		if len(entries) <= 1 {
+			entries = nil
+		}
+		return
+	})
+	inputField.SetAutocompletedFunc(func(text string, index, source int) bool {
+		if source != tview.AutocompletedNavigate {
+			inputField.SetText(text)
+		}
+		return source == tview.AutocompletedEnter || source == tview.AutocompletedClick
+	})
+	if err := app.EnableMouse(true).SetRoot(inputField, true).Run(); err != nil {
 		panic(err)
 	}
-	return strings.TrimSpace(content)
+
+	return inputField.GetText()
 }

@@ -1,32 +1,62 @@
 package component
 
 import (
-	"bytes"
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-
-	"github.com/aronlt/xman/component/utils"
 
 	"github.com/aronlt/toolkit/ds"
 	"github.com/aronlt/toolkit/terror"
-	"github.com/aronlt/toolkit/tio"
+	"github.com/aronlt/xman/component/utils"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
-func Tidy(_ *cli.Context) error {
-	pushBranch := utils.GetFromStdio("推送到什么分支")
-	moduleName := utils.GetFromStdio("要替换的模块名")
-	branchName := utils.GetFromStdio("模块替换后的分支")
-	if ds.SliceIncludeUnpack("", pushBranch, moduleName, branchName) {
-		return fmt.Errorf("invalid arguments:%+v, %+v, %+v", pushBranch, moduleName, branchName)
-	}
+type Tidy struct {
+}
+
+func NewTidy() *Tidy {
+	return &Tidy{}
+}
+
+func (t *Tidy) PreCheck() error {
 	err := utils.GitCheckDirtyZone()
 	if err != nil {
 		return terror.Wrap(err, "work zone is dirty")
 	}
+	return nil
+}
+
+func (t *Tidy) Name() string {
+	return "mod"
+}
+
+func (t *Tidy) Usage() string {
+	return "更新依赖的模块信息"
+}
+
+func (t *Tidy) Run(_ *cli.Context) error {
+	if err := t.PreCheck(); err != nil {
+		return terror.Wrap(err, "call PreCheck fail")
+	}
+
+	modInfo, err := NewModInfo()
+	if err != nil {
+		terror.Wrap(err, "call getModInfo fail")
+	}
+	modules, err := modInfo.ListModuleNames()
+	if err != nil {
+		terror.Wrap(err, "call ListModuleNames fail")
+	}
+	branches, err := utils.ListAllBranch()
+	if err != nil {
+		terror.Wrap(err, "call ListAllBranch fail")
+	}
+	pushBranch := utils.GetFromStdio("推送到什么分支", branches...)
+	moduleName := utils.GetFromStdio("要替换的模块名", modules...)
+	branchName := utils.GetFromStdio("模块替换后的分支")
+	if ds.SliceIncludeUnpack("", pushBranch, moduleName, branchName) {
+		return fmt.Errorf("invalid arguments:%+v, %+v, %+v", pushBranch, moduleName, branchName)
+	}
+
 	err = utils.GitCheckout(pushBranch)
 	if err != nil {
 		return err
@@ -40,7 +70,7 @@ func Tidy(_ *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	err = replace(moduleName, branchName)
+	err = t.replace(modInfo, moduleName, branchName)
 	if err != nil {
 		return err
 	}
@@ -54,7 +84,6 @@ func Tidy(_ *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	utils.WaitForKeyPress()
 	err = utils.GitPush(pushBranch)
 	if err != nil {
 		return err
@@ -63,57 +92,18 @@ func Tidy(_ *cli.Context) error {
 	return nil
 }
 
-func replace(moduleName string, branchName string) error {
-	wd, err := os.Getwd()
+func (t *Tidy) replace(modInfo *ModInfo, moduleName string, branchName string) error {
+
+	err, ok := modInfo.Replace(moduleName, branchName)
 	if err != nil {
-		err = terror.Wrap(err, "call os.Getwd fail")
-		return err
+		terror.Wrap(err, "call Replace fail")
 	}
-	filename := filepath.Join(wd, "go.mod")
-	lines, err := tio.ReadLines(filename)
-	if err != nil {
-		err = terror.Wrap(err, "call tio.ReadLines fail")
-		return err
-	}
-	inRequire := false
-	replaceCount := 0
-	for i, lineContent := range lines {
-		line := string(lineContent)
-		line = strings.TrimSpace(line)
-		if strings.HasPrefix(line, "require") {
-			inRequire = true
-			continue
-		}
-		if line == ")" {
-			inRequire = false
-			continue
-		}
-		if inRequire {
-			parts := strings.Split(line, " ")
-			if len(parts) < 2 {
-				return fmt.Errorf("warning: invalid module, line:%s", line)
-			}
-			module := parts[0]
-			if strings.HasSuffix(module, moduleName) {
-				parts[1] = branchName
-				newLine := strings.Join(parts, " ")
-				lines[i] = []byte(newLine)
-				logrus.Infof("replace module from:%s -> %s", line, newLine)
-				replaceCount += 1
-			}
-		}
-	}
-	if replaceCount == 0 {
+	if !ok {
 		logrus.Infof("not replace any module, skip")
-		return nil
 	}
-	_, err = tio.WriteFile(filename, bytes.Join(lines, []byte("\n")), false)
+	err = modInfo.Refresh()
 	if err != nil {
-		return terror.Wrap(err, "tio.WriteFile fail")
-	}
-	err = os.Chmod(filename, 0755)
-	if err != nil {
-		return terror.Wrap(err, "os.Chmod fail")
+		return terror.Wrap(err, "call modInfo.Refresh fail")
 	}
 	logrus.Infof("replace success...")
 	return nil

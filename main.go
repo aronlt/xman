@@ -8,68 +8,37 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+type Action interface {
+	Run(ctx *cli.Context) error
+	Name() string
+	Usage() string
+}
+
+func Register() []*cli.Command {
+	actions := []Action{
+		component.NewTidy(),
+		component.NewMerge(),
+		component.NewStash(),
+		component.NewRecover(),
+		component.NewPush(),
+	}
+	commands := make([]*cli.Command, 0, len(actions))
+	for i := range actions {
+		action := actions[i]
+		commands = append(commands, &cli.Command{
+			Name:  action.Name(),
+			Usage: action.Usage(),
+			Action: func(ctx *cli.Context) error {
+				return action.Run(ctx)
+			},
+		})
+	}
+	return commands
+}
+
 func main() {
 	app := &cli.App{
-		Commands: []*cli.Command{
-			{
-				Name:  "mod",
-				Usage: "更新依赖的模块信息",
-				Flags: []cli.Flag{},
-				Action: func(ctx *cli.Context) error {
-					err := component.Tidy(ctx)
-					if err != nil {
-						return err
-					}
-					return nil
-				},
-			},
-			{
-				Name:  "recover",
-				Usage: "恢复当前模块",
-				Action: func(ctx *cli.Context) error {
-					err := component.Recover(ctx)
-					if err != nil {
-						return err
-					}
-					return nil
-				},
-			},
-			{
-				Name:  "stash",
-				Usage: "暂存当前模块",
-				Action: func(ctx *cli.Context) error {
-					err := component.Stash(ctx)
-					if err != nil {
-						return err
-					}
-					return nil
-				},
-			},
-			{
-				Name:  "merge",
-				Usage: "分支合并",
-				Flags: []cli.Flag{},
-				Action: func(ctx *cli.Context) error {
-					err := component.Merge(ctx)
-					if err != nil {
-						return err
-					}
-					return nil
-				},
-			},
-			{
-				Name:  "push",
-				Usage: "分支推送",
-				Flags: []cli.Flag{},
-				Action: func(ctx *cli.Context) error {
-					err := component.Push(ctx)
-					if err != nil {
-						return err
-					}
-					return nil
-				},
-			},
-		},
+		Commands: Register(),
 	}
 
 	err := app.Run(os.Args)

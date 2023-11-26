@@ -8,7 +8,22 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func Push(_ *cli.Context) error {
+type Push struct {
+}
+
+func NewPush() *Push {
+	return &Push{}
+}
+
+func (p *Push) Name() string {
+	return "push"
+}
+
+func (p *Push) Usage() string {
+	return "分支推送"
+}
+
+func (p *Push) Run(_ *cli.Context) error {
 	currentBranch, err := utils.GitCurrentBranch()
 	if err != nil {
 		return terror.Wrap(err, "call utils.GitCurrentBranch fail")
@@ -33,7 +48,7 @@ func Push(_ *cli.Context) error {
 	if err != nil {
 		return terror.Wrap(err, "call GitCheckConflict fail")
 	}
-	err = utils.GitPush(currentBranch)
+	err = utils.GitPush(currentBranch, true)
 	if err != nil {
 		return terror.Wrap(err, "call utils.GitPush fail")
 	}
