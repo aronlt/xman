@@ -28,7 +28,7 @@ func (p *Push) Run(_ *cli.Context) error {
 	if err != nil {
 		return terror.Wrap(err, "call utils.GitCurrentBranch fail")
 	}
-	force := utils.GetFromStdio("是否review git add(输入y确认否则跳过确认)")
+	force := utils.GetFromStdio("是否review git add(输入y确认否则跳过确认)", true)
 	if force == "y" {
 		err = utils.GitAddWithConfirm()
 		if err != nil {

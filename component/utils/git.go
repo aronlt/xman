@@ -101,7 +101,7 @@ func GitStashPop() error {
 
 	content, err := RunCmdWithOutput("git stash list")
 	lines := strings.Split(content, "\n")
-	line := GetFromStdio("恢复的行号(下标0开始)")
+	line := GetFromStdio("恢复的行号(下标0开始)", true)
 	lineNum, err := strconv.Atoi(strings.TrimSpace(line))
 	if err != nil {
 		return terror.Wrap(err, "call strconv.Atoi fail")

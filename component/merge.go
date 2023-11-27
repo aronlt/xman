@@ -32,7 +32,7 @@ func (m *Merge) Run(_ *cli.Context) error {
 		terror.Wrap(err, "call ListAllBranch fail")
 	}
 
-	targetBranch := utils.GetFromStdio("要合入的目标分支", branches...)
+	targetBranch := utils.GetFromStdio("要合入的目标分支", false, branches...)
 	err = utils.GitAddAndCommit()
 	if err != nil {
 		return err

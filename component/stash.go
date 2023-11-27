@@ -32,7 +32,7 @@ func (s *Stash) Run(_ *cli.Context) error {
 		return terror.Wrap(err, "call gitCurrentBranch fail")
 	}
 	t := tutils.TimeToString(time.Now())
-	msg := utils.GetFromStdio("描述信息")
+	msg := utils.GetFromStdio("描述信息", true)
 	err = utils.GitStash(fmt.Sprintf("branch:%s;time:%s;msg:%s", currentBranch, t, msg))
 	if err != nil {
 		return terror.Wrap(err, "call GitStash fail")

@@ -50,9 +50,9 @@ func (t *Tidy) Run(_ *cli.Context) error {
 	if err != nil {
 		terror.Wrap(err, "call ListAllBranch fail")
 	}
-	pushBranch := utils.GetFromStdio("推送到什么分支", branches...)
-	moduleName := utils.GetFromStdio("要替换的模块名", modules...)
-	branchName := utils.GetFromStdio("模块替换后的分支")
+	pushBranch := utils.GetFromStdio("推送到什么分支", false, branches...)
+	moduleName := utils.GetFromStdio("要替换的模块名", false, modules...)
+	branchName := utils.GetFromStdio("模块替换后的分支", false)
 	if ds.SliceIncludeUnpack("", pushBranch, moduleName, branchName) {
 		return fmt.Errorf("invalid arguments:%+v, %+v, %+v", pushBranch, moduleName, branchName)
 	}

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"github.com/aronlt/toolkit/terror"
 	"github.com/aronlt/toolkit/tio"
 	"github.com/aronlt/toolkit/tutils"
+	"github.com/fatih/color"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/sirupsen/logrus"
@@ -84,7 +86,20 @@ func RunCmd(cmd string) error {
 	return err
 }
 
-func GetFromStdio(hint string, words ...string) string {
+func SimpleGetFromStdio(hint string) string {
+	color.Red("%s:", hint)
+	reader := bufio.NewReader(os.Stdin)
+	content, err := reader.ReadString('\n')
+	if err != nil {
+		panic(err)
+	}
+	return strings.TrimSpace(content)
+}
+
+func GetFromStdio(hint string, simple bool, words ...string) string {
+	if simple {
+		return SimpleGetFromStdio(hint)
+	}
 	app := tview.NewApplication()
 	inputField := tview.NewInputField().
 		SetLabel(hint + ":").
