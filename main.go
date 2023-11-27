@@ -17,7 +17,8 @@ type Action interface {
 func Register() []*cli.Command {
 	actions := []Action{
 		component.NewTidy(),
-		component.NewMerge(),
+		component.NewMergeTo(),
+		component.NewMergeFrom(),
 		component.NewStash(),
 		component.NewRecover(),
 		component.NewPush(),

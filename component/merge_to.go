@@ -7,29 +7,29 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type Merge struct {
+type MergeTo struct {
 }
 
-func NewMerge() *Merge {
-	return &Merge{}
+func NewMergeTo() *MergeTo {
+	return &MergeTo{}
 }
 
-func (m *Merge) Name() string {
-	return "merge"
+func (m *MergeTo) Name() string {
+	return "merge_to"
 }
 
-func (m *Merge) Usage() string {
-	return "分支合并"
+func (m *MergeTo) Usage() string {
+	return "并到其他分支"
 }
 
-func (m *Merge) Run(_ *cli.Context) error {
+func (m *MergeTo) Run(_ *cli.Context) error {
 	currentBranch, err := utils.GitCurrentBranch()
 	if err != nil {
 		return terror.Wrap(err, "call gitCurrentBranch fail")
 	}
 	branches, err := utils.ListAllBranch()
 	if err != nil {
-		terror.Wrap(err, "call ListAllBranch fail")
+		return terror.Wrap(err, "call ListAllBranch fail")
 	}
 
 	targetBranch := utils.GetFromStdio("要合入的目标分支", false, branches...)
