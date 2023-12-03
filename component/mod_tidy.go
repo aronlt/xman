@@ -17,6 +17,10 @@ func NewTidy() *Tidy {
 	return &Tidy{}
 }
 
+func (t *Tidy) Flags() []cli.Flag {
+	return []cli.Flag{}
+}
+
 func (t *Tidy) PreCheck() error {
 	err := utils.GitCheckDirtyZone()
 	if err != nil {

@@ -12,6 +12,7 @@ type Action interface {
 	Run(ctx *cli.Context) error
 	Name() string
 	Usage() string
+	Flags() []cli.Flag
 }
 
 func Register() []*cli.Command {
@@ -22,6 +23,7 @@ func Register() []*cli.Command {
 		component.NewStash(),
 		component.NewRecover(),
 		component.NewPush(),
+		component.NewTag(),
 	}
 	commands := make([]*cli.Command, 0, len(actions))
 	for i := range actions {
@@ -29,6 +31,7 @@ func Register() []*cli.Command {
 		commands = append(commands, &cli.Command{
 			Name:  action.Name(),
 			Usage: action.Usage(),
+			Flags: action.Flags(),
 			Action: func(ctx *cli.Context) error {
 				return action.Run(ctx)
 			},

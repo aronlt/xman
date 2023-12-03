@@ -26,6 +26,10 @@ func (s *Stash) Usage() string {
 	return "暂存当前代码到stash中"
 }
 
+func (s *Stash) Flags() []cli.Flag {
+	return []cli.Flag{}
+}
+
 func (s *Stash) Run(_ *cli.Context) error {
 	currentBranch, err := utils.GitCurrentBranch()
 	if err != nil {

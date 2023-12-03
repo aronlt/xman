@@ -36,6 +36,28 @@ func GitCheckDirtyZone() error {
 	return nil
 }
 
+func GitAddTag(tag string) error {
+	if tag == "" {
+		return fmt.Errorf("empty tag")
+	}
+	err := RunCmd("git tag " + tag)
+	if err != nil {
+		return terror.Wrap(err, "call push tag fail")
+	}
+	return nil
+}
+
+func GitPushTag(tag string) error {
+	if tag == "" {
+		return fmt.Errorf("empty tag")
+	}
+	err := RunCmd("git push origin " + tag)
+	if err != nil {
+		return terror.Wrap(err, "call push tag fail")
+	}
+	return nil
+}
+
 func GitPull(branch string) error {
 	err := RunCmd("git pull origin " + branch)
 	if err != nil {
@@ -58,6 +80,23 @@ func GitPush(branch string, force ...bool) error {
 		return terror.Wrap(err, "run cmd fail")
 	}
 	return nil
+}
+
+func GitPullTags() error {
+	err := RunCmd("git pull --tags")
+	if err != nil {
+		return terror.Wrap(err, "run cmd fail")
+	}
+	return nil
+}
+
+func GitTags() ([]string, error) {
+	content, err := RunCmdWithOutput("git tag")
+	if err != nil {
+		return nil, terror.Wrap(err, "call RunCmdWithOutput fail")
+	}
+	lines := strings.Split(content, "\n")
+	return lines, nil
 }
 
 func GitCheckout(branch string) error {

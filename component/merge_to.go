@@ -22,6 +22,10 @@ func (m *MergeTo) Usage() string {
 	return "并到其他分支"
 }
 
+func (m *MergeTo) Flags() []cli.Flag {
+	return []cli.Flag{}
+}
+
 func (m *MergeTo) Run(_ *cli.Context) error {
 	currentBranch, err := utils.GitCurrentBranch()
 	if err != nil {

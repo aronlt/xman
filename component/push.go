@@ -23,10 +23,18 @@ func (p *Push) Usage() string {
 	return "分支推送"
 }
 
+func (p *Push) Flags() []cli.Flag {
+	return []cli.Flag{}
+}
+
 func (p *Push) Run(_ *cli.Context) error {
 	currentBranch, err := utils.GitCurrentBranch()
 	if err != nil {
 		return terror.Wrap(err, "call utils.GitCurrentBranch fail")
+	}
+	err = utils.RunCmd("go mod tidy")
+	if err != nil {
+		return terror.Wrap(err, "call go mod tidy fail")
 	}
 	force := utils.GetFromStdio("是否review git add(输入y确认否则跳过确认)", true)
 	if force == "y" {
@@ -48,6 +56,7 @@ func (p *Push) Run(_ *cli.Context) error {
 	if err != nil {
 		return terror.Wrap(err, "call GitCheckConflict fail")
 	}
+
 	err = utils.GitPush(currentBranch, true)
 	if err != nil {
 		return terror.Wrap(err, "call utils.GitPush fail")

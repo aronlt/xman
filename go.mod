@@ -3,9 +3,10 @@ module github.com/aronlt/xman
 go 1.19
 
 require (
-	github.com/aronlt/toolkit v1.0.36
+	github.com/aronlt/toolkit v1.0.41
 	github.com/fatih/color v1.15.0
 	github.com/gdamore/tcell/v2 v2.6.0
+	github.com/hashicorp/go-version v1.6.0
 	github.com/rivo/tview v0.0.0-20231115183240-7c9e464bac02
 	github.com/sirupsen/logrus v1.9.4-0.20230606125235-dd1b4c2e81af
 	github.com/urfave/cli/v2 v2.25.7

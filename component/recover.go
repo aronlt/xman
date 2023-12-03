@@ -17,6 +17,10 @@ func (r *Recover) Name() string {
 	return "recover"
 }
 
+func (r *Recover) Flags() []cli.Flag {
+	return []cli.Flag{}
+}
+
 func (r *Recover) Usage() string {
 	return "从git stash中恢复代码"
 }
