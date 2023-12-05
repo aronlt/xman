@@ -1,6 +1,8 @@
 package component
 
 import (
+	"fmt"
+
 	"github.com/aronlt/xman/component/utils"
 
 	"github.com/aronlt/toolkit/terror"
@@ -50,6 +52,9 @@ func (m *MergeFrom) Run(_ *cli.Context) error {
 		return err
 	}
 	fromBranch := utils.GetFromStdio("从哪个分支合入", false, branches...)
+	if fromBranch == currentBranch {
+		return fmt.Errorf("target branch should not equal to current branch")
+	}
 
 	err = utils.GitMerge(fromBranch)
 	if err != nil {
