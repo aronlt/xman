@@ -25,10 +25,18 @@ func (m *MergeFrom) Usage() string {
 }
 
 func (m *MergeFrom) Flags() []cli.Flag {
-	return []cli.Flag{}
+	return []cli.Flag{&cli.StringFlag{
+		Name:    "commit_msg",
+		Aliases: []string{"m"},
+		Usage:   "commit提交信息",
+	}, &cli.StringFlag{
+		Name:    "merge_from",
+		Aliases: []string{"from"},
+		Usage:   "从那个分支合入",
+	}}
 }
 
-func (m *MergeFrom) Run(_ *cli.Context) error {
+func (m *MergeFrom) Run(ctx *cli.Context) error {
 	currentBranch, err := utils.GitCurrentBranch()
 	if err != nil {
 		return terror.Wrap(err, "call gitCurrentBranch fail")
@@ -47,11 +55,16 @@ func (m *MergeFrom) Run(_ *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	err = utils.GitAddAndCommit()
+	commitMsg := ctx.String("commit_msg")
+	err = utils.GitAddAndCommit(commitMsg)
 	if err != nil {
 		return err
 	}
-	fromBranch := utils.GetFromStdio("从哪个分支合入", false, branches...)
+
+	fromBranch := ctx.String("merge_from")
+	if fromBranch == "" {
+		fromBranch = utils.GetFromStdio("从哪个分支合入", false, branches...)
+	}
 	if fromBranch == currentBranch {
 		return fmt.Errorf("target branch should not equal to current branch")
 	}

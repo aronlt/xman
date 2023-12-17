@@ -24,7 +24,8 @@ func (t *Tag) Run(ctx *cli.Context) error {
 	suffix := ctx.String("suffix")
 	err := utils.GitCheckDirtyZone()
 	if err != nil {
-		err = utils.GitAddAndCommit()
+		commitMsg := ctx.String("commit_msg")
+		err = utils.GitAddAndCommit(commitMsg)
 		if err != nil {
 			return terror.Wrap(err, "call GitAddAndCommit fail")
 		}
@@ -141,5 +142,10 @@ func (t *Tag) Flags() []cli.Flag {
 			Name:    "suffix",
 			Aliases: []string{"s"},
 			Usage:   "tag 后缀信息",
+		},
+		&cli.StringFlag{
+			Name:    "commit_msg",
+			Aliases: []string{"m"},
+			Usage:   "commit提交信息",
 		}}
 }

@@ -19,12 +19,16 @@ func GitCheckConflict() error {
 	return nil
 }
 
-func GitAddAndCommit() error {
+func GitAddAndCommit(msg string) error {
 	err := RunCmd("git add .")
 	if err != nil {
 		return err
 	}
-	err = RunInteractiveCmd("git", []string{"commit"})
+	if msg == "" {
+		err = RunInteractiveCmd("git", []string{"commit"})
+	} else {
+		err = RunInteractiveCmd("git", []string{"commit", "-m", msg})
+	}
 	return err
 }
 
@@ -162,12 +166,16 @@ func GitStashPop() error {
 	return nil
 }
 
-func GitAddWithConfirm() error {
+func GitAddWithConfirm(msg string) error {
 	err := RunInteractiveCmd("git", []string{"add", "-p", "."})
 	if err != nil {
 		return terror.Wrap(err, "call RunInteractiveCmd fail")
 	}
-	err = RunInteractiveCmd("git", []string{"commit"})
+	if msg != "" {
+		err = RunInteractiveCmd("git", []string{"commit"})
+	} else {
+		err = RunInteractiveCmd("git", []string{"commit", "-m", msg})
+	}
 	if err != nil {
 		return terror.Wrap(err, "call RunInteractiveCmd fail")
 	}

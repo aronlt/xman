@@ -18,7 +18,11 @@ func NewTidy() *Tidy {
 }
 
 func (t *Tidy) Flags() []cli.Flag {
-	return []cli.Flag{}
+	return []cli.Flag{&cli.StringFlag{
+		Name:    "commit_msg",
+		Aliases: []string{"m"},
+		Usage:   "commit提交信息",
+	}}
 }
 
 func (t *Tidy) PreCheck() error {
@@ -37,7 +41,7 @@ func (t *Tidy) Usage() string {
 	return "更新依赖的模块信息"
 }
 
-func (t *Tidy) Run(_ *cli.Context) error {
+func (t *Tidy) Run(ctx *cli.Context) error {
 	if err := t.PreCheck(); err != nil {
 		return terror.Wrap(err, "call PreCheck fail")
 	}
@@ -84,7 +88,8 @@ func (t *Tidy) Run(_ *cli.Context) error {
 		return err
 	}
 
-	err = utils.GitAddAndCommit()
+	commitMsg := ctx.String("commit_msg")
+	err = utils.GitAddAndCommit(commitMsg)
 	if err != nil {
 		return err
 	}
