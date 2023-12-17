@@ -29,3 +29,34 @@ the stash code is restored interactively
 
 #### xman tag
 auto tag code, support prefix, suffix
+
+## option
+* add commit message
+```bash
+--m="commit message"
+```
+
+* skip add review
+```bash
+--k=true
+```
+
+* merge from branch
+```bash
+--from="branch"
+```
+
+* merge to branch
+```bash
+--to="branch"
+```
+
+* tag prefix
+```bash
+--p="debug"
+```
+
+* tag suffix
+```bash
+--s="demo"
+```
