@@ -4,9 +4,11 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
+	"github.com/aronlt/toolkit/ds"
 	"github.com/aronlt/toolkit/terror"
 	"github.com/fatih/color"
 )
@@ -195,4 +197,19 @@ func ListAllBranch() ([]string, error) {
 		branches = append(branches, line)
 	}
 	return branches, nil
+}
+
+func GetAddFiles() ([]string, error) {
+	content, err := RunCmdWithOutput("git diff --cached --name-only")
+	if err != nil {
+		return nil, terror.Wrap(err, "call RunCmdWithOutput fail")
+	}
+	lines := strings.Split(content, "\n")
+	dirs := ds.NewSet[string]()
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		line = filepath.Dir(line)
+		dirs.Insert(line)
+	}
+	return dirs.Keys(), nil
 }

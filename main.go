@@ -24,6 +24,7 @@ func Register() []*cli.Command {
 		component.NewRecover(),
 		component.NewPush(),
 		component.NewTag(),
+		component.NewLint(),
 	}
 	commands := make([]*cli.Command, 0, len(actions))
 	for i := range actions {
