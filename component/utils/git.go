@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -15,6 +14,14 @@ import (
 
 func GitCheckConflict() error {
 	err := RunCmd("[ $(git ls-files -u  | cut -f 2 | sort -u | wc -l) -eq 0 ] && exit 0 || exit 1")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GitAddAll() error {
+	err := RunCmd("git add .")
 	if err != nil {
 		return err
 	}
@@ -199,17 +206,22 @@ func ListAllBranch() ([]string, error) {
 	return branches, nil
 }
 
-func GetAddFiles() ([]string, error) {
+func GetAddFiles(ignore ds.BuiltinSet[string]) ([]string, error) {
 	content, err := RunCmdWithOutput("git diff --cached --name-only")
 	if err != nil {
 		return nil, terror.Wrap(err, "call RunCmdWithOutput fail")
 	}
 	lines := strings.Split(content, "\n")
-	dirs := ds.NewSet[string]()
+	files := ds.NewSet[string]()
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
-		line = filepath.Dir(line)
-		dirs.Insert(line)
+		if line == "" {
+			continue
+		}
+		if ignore.Has(line) {
+			continue
+		}
+		files.Insert(line)
 	}
-	return dirs.Keys(), nil
+	return files.Keys(), nil
 }

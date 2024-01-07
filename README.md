@@ -9,6 +9,9 @@ go install github.com/aronlt/xman@latest
 ```
 
 ## how to use
+#### xman lint
+lint all files that added to stash zone, you should install golang-lint first
+
 #### xman mod
 replace dependency go module in go.mod file, auto tidy mod file.
 
