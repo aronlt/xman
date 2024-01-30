@@ -70,19 +70,23 @@ func RunInteractiveCmd(cmd string, args []string) error {
 	return nil
 }
 
-func RunCmdWithOutput(cmd string) (string, error) {
+func RunCmdWithOutput(cmd string, printLog bool) (string, error) {
 	env := map[string]string{}
 	result := tutils.RunCmd(cmd, env)
 	if result.Error() != nil {
-		logrus.Infof("run cmd:%s fail, error:%+v", cmd, result.Error())
+		if printLog {
+			logrus.Infof("run cmd:%s fail, error:%+v", cmd, result.Error())
+		}
 		return "", result.Error()
 	}
-	logrus.Infof("run cmd:%s success, output:%s", cmd, result.String())
+	if printLog {
+		logrus.Infof("run cmd:%s success, output:%s", cmd, result.String())
+	}
 	return result.String(), nil
 }
 
 func RunCmd(cmd string) error {
-	_, err := RunCmdWithOutput(cmd)
+	_, err := RunCmdWithOutput(cmd, true)
 	return err
 }
 

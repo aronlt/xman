@@ -10,6 +10,7 @@ import (
 	"github.com/aronlt/toolkit/ds"
 	"github.com/aronlt/toolkit/terror"
 	"github.com/fatih/color"
+	"github.com/sirupsen/logrus"
 )
 
 func GitCheckConflict() error {
@@ -104,7 +105,7 @@ func GitPullTags() error {
 }
 
 func GitTags() ([]string, error) {
-	content, err := RunCmdWithOutput("git tag")
+	content, err := RunCmdWithOutput("git tag", true)
 	if err != nil {
 		return nil, terror.Wrap(err, "call RunCmdWithOutput fail")
 	}
@@ -129,7 +130,7 @@ func GitMerge(branch string) error {
 }
 
 func GitCurrentBranch() (string, error) {
-	out, err := RunCmdWithOutput("git rev-parse --abbrev-ref HEAD")
+	out, err := RunCmdWithOutput("git rev-parse --abbrev-ref HEAD", true)
 	if err != nil {
 		return "", terror.Wrap(err, "run cmd fail")
 	}
@@ -151,7 +152,7 @@ func GitStashPop() error {
 		return terror.Wrap(err, "call RunInteractiveCmd fail")
 	}
 
-	content, err := RunCmdWithOutput("git stash list")
+	content, err := RunCmdWithOutput("git stash list", true)
 	lines := strings.Split(content, "\n")
 	line := GetFromStdio("恢复的行号(下标0开始)", true)
 	lineNum, err := strconv.Atoi(strings.TrimSpace(line))
@@ -192,7 +193,7 @@ func GitAddWithConfirm(msg string) error {
 }
 
 func ListAllBranch() ([]string, error) {
-	content, err := RunCmdWithOutput("git branch")
+	content, err := RunCmdWithOutput("git branch", true)
 	if err != nil {
 		return nil, terror.Wrap(err, "call RunInteractiveCmd fail")
 	}
@@ -206,8 +207,22 @@ func ListAllBranch() ([]string, error) {
 	return branches, nil
 }
 
+func PullRemoteRepository() error {
+	err := GitCheckDirtyZone()
+	if err != nil {
+		logrus.WithError(err).Errorf("dirty working zone")
+		return err
+	}
+	err = RunCmd("git pull")
+	if err != nil {
+		logrus.WithError(err).Errorf("pull remote repository fail")
+		return err
+	}
+	return nil
+}
+
 func GetAddFiles(ignore ds.BuiltinSet[string]) ([]string, error) {
-	content, err := RunCmdWithOutput("git diff --cached --name-only")
+	content, err := RunCmdWithOutput("git diff --cached --name-only", true)
 	if err != nil {
 		return nil, terror.Wrap(err, "call RunCmdWithOutput fail")
 	}

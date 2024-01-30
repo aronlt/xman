@@ -33,6 +33,19 @@ the stash code is restored interactively
 #### xman tag
 auto tag code, support prefix, suffix
 
+
+#### xman local_branch
+list local branch info
+
+#### xman remote_branch
+list remote branch info
+
+#### xman list_tags
+list tags info
+
+#### xman last_commit
+list all branch last commit info
+
 ## option
 * add commit message
 ```bash
