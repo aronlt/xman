@@ -48,17 +48,17 @@ func (m *MergeFrom) Run(ctx *cli.Context) error {
 
 	err = utils.GitPull(currentBranch)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitPull fail, branch:%s", currentBranch)
 	}
 
 	err = utils.GitCheckConflict()
 	if err != nil {
-		return err
+		return terror.Wrap(err, "call GitCheckConflict fail")
 	}
 	commitMsg := ctx.String("commit_msg")
 	err = utils.GitAddAndCommit(commitMsg)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitAddAndCommit fail, commit msg:%s", commitMsg)
 	}
 
 	fromBranch := ctx.String("merge_from")
@@ -71,15 +71,15 @@ func (m *MergeFrom) Run(ctx *cli.Context) error {
 
 	err = utils.GitMerge(fromBranch)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitMerge fail, from branch:%s", fromBranch)
 	}
 	err = utils.GitCheckConflict()
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitCheckConflict fail")
 	}
 	err = utils.GitPush(currentBranch)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitPush fail, branch:%s", currentBranch)
 	}
 	return nil
 }

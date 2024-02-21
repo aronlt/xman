@@ -11,6 +11,14 @@ go install github.com/aronlt/xman@latest
 ## how to use
 #### xman lint
 lint all files that added to stash zone, you should install golang-lint first
+```bash
+xman lint
+```
+###### option
+
+* lint all files in dir
+
+    --dir=true
 
 #### xman mod
 replace dependency go module in go.mod file, auto tidy mod file.
@@ -18,11 +26,38 @@ replace dependency go module in go.mod file, auto tidy mod file.
 #### xman push
 automatically complete the local code submission and push the git branch to the remote.
 
+###### option
+* add review
+ 
+    --r=true
+ 
+* add commit message
+ 
+  --m="commit message"
+
 #### xman merge_from
 automatically complete local code submission, merge from the pointed branch, </br> detect conflicts, and push to the remote branch.
 
+###### option
+* add commit message
+ 
+    --m="commit message"
+ 
+* merge from branch
+ 
+  --from="branch"
+
 #### xman merge_to
 automatically complete local code submission, merge into the pointed branch, </br> detect conflicts, and push to the remote branch.
+
+###### option
+* add commit message
+
+  --m="commit message"
+
+* merge to branch
+
+  --to="branch"
 
 #### xman stash
 local code temporarily stored (stash).
@@ -32,6 +67,15 @@ the stash code is restored interactively
 
 #### xman tag
 auto tag code, support prefix, suffix
+
+###### option
+* tag prefix
+ 
+  --p="debug"
+
+* tag suffix
+ 
+  --s="demo"
 
 
 #### xman local_branch
@@ -46,33 +90,20 @@ list tags info
 #### xman last_commit
 list all branch last commit info
 
-## option
-* add commit message
-```bash
---m="commit message"
-```
+#### xman checkout
+checkout to another branch, submit local branch
+###### option
+* checkout to new branch
 
-* skip add review
-```bash
---k=true
-```
+    --b="branch_name" 
 
-* merge from branch
-```bash
---from="branch"
-```
+* checkout new branch from local branch
+ 
+    --cf="from_branch" 
 
-* merge to branch
-```bash
---to="branch"
-```
 
-* tag prefix
-```bash
---p="debug"
-```
 
-* tag suffix
-```bash
---s="demo"
-```
+
+
+
+

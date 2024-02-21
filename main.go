@@ -29,6 +29,7 @@ func Register() []*cli.Command {
 		component.NewListGitRemoteBranch(),
 		component.NewListTags(),
 		component.NewListLastCommit(),
+		component.NewCheckoutBranch(),
 	}
 	commands := make([]*cli.Command, 0, len(actions))
 	for i := range actions {

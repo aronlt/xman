@@ -3,6 +3,7 @@ package component
 import (
 	"fmt"
 
+	"github.com/aronlt/toolkit/terror"
 	"github.com/aronlt/xman/component/utils"
 	"github.com/urfave/cli/v2"
 )
@@ -29,7 +30,7 @@ func (l *ListLastCommit) Run(_ *cli.Context) error {
 	cmd := `for branch in $(git branch -r | grep -v HEAD);do echo -e $(git show --format="%ci %cr" $branch | head -n 1) \\t$branch; done | sort -r`
 	out, err := utils.RunCmdWithOutput(cmd, false)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call RunCmdWithOutput fail, cmd:%s", cmd)
 	}
 	fmt.Println()
 	fmt.Printf("%s", out)

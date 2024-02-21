@@ -10,8 +10,12 @@ import (
 	"github.com/aronlt/toolkit/ds"
 	"github.com/aronlt/toolkit/terror"
 	"github.com/fatih/color"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
+
+var EmptyBranchErr = errors.New("empty branch error")
+var EmptyTagErr = errors.New("empty tag error")
 
 func GitCheckConflict() error {
 	err := RunCmd("[ $(git ls-files -u  | cut -f 2 | sort -u | wc -l) -eq 0 ] && exit 0 || exit 1")
@@ -52,7 +56,7 @@ func GitCheckDirtyZone() error {
 
 func GitAddTag(tag string) error {
 	if tag == "" {
-		return fmt.Errorf("empty tag")
+		return EmptyTagErr
 	}
 	err := RunCmd("git tag " + tag)
 	if err != nil {
@@ -63,7 +67,7 @@ func GitAddTag(tag string) error {
 
 func GitPushTag(tag string) error {
 	if tag == "" {
-		return fmt.Errorf("empty tag")
+		return EmptyTagErr
 	}
 	err := RunCmd("git push origin " + tag)
 	if err != nil {
@@ -73,6 +77,9 @@ func GitPushTag(tag string) error {
 }
 
 func GitPull(branch string) error {
+	if branch == "" {
+		return EmptyBranchErr
+	}
 	err := RunCmd("git pull origin " + branch)
 	if err != nil {
 		return terror.Wrap(err, "run cmd fail")
@@ -81,6 +88,9 @@ func GitPull(branch string) error {
 }
 
 func GitPush(branch string, force ...bool) error {
+	if branch == "" {
+		return EmptyBranchErr
+	}
 	if len(force) == 0 {
 		color.Red("输入y/Y开始推送到远程...")
 		reader := bufio.NewReader(os.Stdin)
@@ -113,8 +123,15 @@ func GitTags() ([]string, error) {
 	return lines, nil
 }
 
-func GitCheckout(branch string) error {
-	err := RunCmd("git checkout " + branch)
+func GitCheckout(branch string, newBranch ...bool) error {
+	if branch == "" {
+		return EmptyBranchErr
+	}
+	cmd := "git checkout "
+	if len(newBranch) != 0 && newBranch[0] {
+		cmd += " -b "
+	}
+	err := RunCmd(cmd + branch)
 	if err != nil {
 		return terror.Wrap(err, "run cmd fail")
 	}
@@ -122,6 +139,9 @@ func GitCheckout(branch string) error {
 }
 
 func GitMerge(branch string) error {
+	if branch == "" {
+		return EmptyBranchErr
+	}
 	err := RunCmd("git merge " + branch)
 	if err != nil {
 		return terror.Wrap(err, "run cmd fail")
@@ -239,4 +259,40 @@ func GetAddFiles(ignore ds.BuiltinSet[string]) ([]string, error) {
 		files.Insert(line)
 	}
 	return files.Keys(), nil
+}
+
+func PushBranch(branch string) error {
+	if branch == "" {
+		return EmptyBranchErr
+	}
+	err := GitPull(branch)
+	if err != nil {
+		// 远程分支可能不存在，只报错不返回失败
+		logrus.WithError(err).Errorf("call GitPull fail")
+	}
+	err = GitCheckConflict()
+	if err != nil {
+		return terror.Wrap(err, "call GitCheckConflict fail")
+	}
+
+	err = GitPush(branch, true)
+	if err != nil {
+		return terror.Wrap(err, "call utils.GitPush fail")
+	}
+	return nil
+}
+
+func PullBranch(branch string) error {
+	if branch == "" {
+		return EmptyBranchErr
+	}
+	err := GitPull(branch)
+	if err != nil {
+		return terror.Wrapf(err, "call GitPushfail, branch:%s", branch)
+	}
+	err = GitCheckConflict()
+	if err != nil {
+		return terror.Wrap(err, "call GitCheckConflict fail")
+	}
+	return nil
 }

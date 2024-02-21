@@ -4,7 +4,6 @@ import (
 	"github.com/aronlt/xman/component/utils"
 
 	"github.com/aronlt/toolkit/terror"
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
@@ -31,9 +30,9 @@ func (p *Push) Flags() []cli.Flag {
 			Usage:   "commit提交信息",
 		},
 		&cli.StringFlag{
-			Name:    "skip_review",
-			Aliases: []string{"k"},
-			Usage:   "跳过add确认",
+			Name:    "review",
+			Aliases: []string{"r"},
+			Usage:   "add确认",
 		}}
 }
 
@@ -47,12 +46,8 @@ func (p *Push) Run(ctx *cli.Context) error {
 		return terror.Wrap(err, "call go mod tidy fail")
 	}
 	commitMsg := ctx.String("commit_msg")
-	skipReview := ctx.Bool("skip_review")
-	force := "n"
-	if !skipReview {
-		force = utils.GetFromStdio("是否review git add(输入y确认否则跳过确认)", true)
-	}
-	if force == "y" {
+	review := ctx.Bool("review")
+	if review {
 		err = utils.GitAddWithConfirm(commitMsg)
 		if err != nil {
 			return terror.Wrap(err, "call utils.GitAddWithConfirm fail")
@@ -63,18 +58,9 @@ func (p *Push) Run(ctx *cli.Context) error {
 			return terror.Wrap(err, "call utils.GitAddAndCommit fail")
 		}
 	}
-	err = utils.GitPull(currentBranch)
+	err = utils.PushBranch(currentBranch)
 	if err != nil {
-		logrus.Warnf("call utils.GitPull fail")
-	}
-	err = utils.GitCheckConflict()
-	if err != nil {
-		return terror.Wrap(err, "call GitCheckConflict fail")
-	}
-
-	err = utils.GitPush(currentBranch, true)
-	if err != nil {
-		return terror.Wrap(err, "call utils.GitPush fail")
+		return terror.Wrap(err, "call utils.PushBranch fail")
 	}
 	return nil
 }

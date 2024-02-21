@@ -3,6 +3,7 @@ package component
 import (
 	"fmt"
 
+	"github.com/aronlt/toolkit/terror"
 	"github.com/aronlt/xman/component/utils"
 	"github.com/urfave/cli/v2"
 )
@@ -28,12 +29,12 @@ func (l *ListTags) Flags() []cli.Flag {
 func (l *ListTags) Run(_ *cli.Context) error {
 	err := utils.PullRemoteRepository()
 	if err != nil {
-		return err
+		return terror.Wrap(err, "call PullRemoteRepository fail")
 	}
 	cmd := `git for-each-ref --format='%(color:cyan)%(authordate:format:%Y/%m/%d %I:%M %p)    %(align:25,left)%(color:yellow)%(authorname)%(end) %(color:reset)%(refname:strip=1)' --sort=authordate refs/tags`
 	out, err := utils.RunCmdWithOutput(cmd, false)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call RunCmdWithOutput fail, cmd:%s", cmd)
 	}
 	fmt.Println()
 	fmt.Printf("%s", out)

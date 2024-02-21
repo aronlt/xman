@@ -59,44 +59,44 @@ func (m *MergeTo) Run(ctx *cli.Context) error {
 	commitMsg := ctx.String("commit_msg")
 	err = utils.GitAddAndCommit(commitMsg)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitAddAndCommit fail, commit msg:%s", commitMsg)
 	}
 	err = utils.GitPull(currentBranch)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitPull fail, branch:%s", currentBranch)
 	}
 
 	err = utils.GitCheckConflict()
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitCheckConflict fail")
 	}
 
 	err = utils.GitPush(currentBranch)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitPush fail, branch:%s", currentBranch)
 	}
 
 	err = utils.GitCheckout(targetBranch)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitCheckout fail, branch:%s", targetBranch)
 	}
 
 	err = utils.GitPull(targetBranch)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitPull fail, branch:%s", targetBranch)
 	}
 	err = utils.GitCheckConflict()
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitCheckConflict fail")
 	}
 
 	err = utils.GitMerge(currentBranch)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitMerge fail, branch:%s", currentBranch)
 	}
 	err = utils.GitPush(targetBranch)
 	if err != nil {
-		return err
+		return terror.Wrapf(err, "call GitPush fail, branch:%s", targetBranch)
 	}
 	return nil
 }

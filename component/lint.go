@@ -84,7 +84,7 @@ func (l *Lint) Flags() []cli.Flag {
 		&cli.BoolFlag{
 			Name:    "lint_dir",
 			Aliases: []string{"dir"},
-			Usage:   "是否以目录纬度lint",
+			Usage:   "是否以目录维度lint",
 		},
 	}
 }
