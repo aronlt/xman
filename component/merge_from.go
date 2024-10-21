@@ -3,6 +3,9 @@ package component
 import (
 	"fmt"
 
+	"github.com/aronlt/toolkit/ds"
+	"github.com/sirupsen/logrus"
+
 	"github.com/aronlt/xman/component/utils"
 
 	"github.com/aronlt/toolkit/terror"
@@ -26,10 +29,6 @@ func (m *MergeFrom) Usage() string {
 
 func (m *MergeFrom) Flags() []cli.Flag {
 	return []cli.Flag{&cli.StringFlag{
-		Name:    "commit_msg",
-		Aliases: []string{"m"},
-		Usage:   "commit提交信息",
-	}, &cli.StringFlag{
 		Name:    "merge_from",
 		Aliases: []string{"from"},
 		Usage:   "从那个分支合入",
@@ -41,33 +40,55 @@ func (m *MergeFrom) Run(ctx *cli.Context) error {
 	if err != nil {
 		return terror.Wrap(err, "call gitCurrentBranch fail")
 	}
-	branches, err := utils.ListAllBranch()
-	if err != nil {
-		return terror.Wrap(err, "call ListAllBranch fail")
+	if err = utils.GitCheckDirtyZone(); err != nil {
+		return terror.Wrap(err, "can not merge when work dir is dirty")
 	}
 
 	err = utils.GitPull(currentBranch)
 	if err != nil {
-		return terror.Wrapf(err, "call GitPull fail, branch:%s", currentBranch)
+		logrus.Errorf("call GitPull fail, branch:%s, error:%v", currentBranch, err)
+	} else {
+		err = utils.GitCheckConflict()
+		if err != nil {
+			return terror.Wrap(err, "call GitCheckConflict fail")
+		}
 	}
+	logrus.Infof("1. pull current branch:%s success", currentBranch)
 
-	err = utils.GitCheckConflict()
+	branches, err := utils.ListAllBranch()
 	if err != nil {
-		return terror.Wrap(err, "call GitCheckConflict fail")
+		return terror.Wrap(err, "call ListAllBranch fail")
 	}
-	commitMsg := ctx.String("commit_msg")
-	err = utils.GitAddAndCommit(commitMsg)
-	if err != nil {
-		return terror.Wrapf(err, "call GitAddAndCommit fail, commit msg:%s", commitMsg)
-	}
-
 	fromBranch := ctx.String("merge_from")
 	if fromBranch == "" {
 		fromBranch = utils.GetFromStdio("从哪个分支合入", false, branches...)
 	}
 	if fromBranch == currentBranch {
-		return fmt.Errorf("target branch should not equal to current branch")
+		return fmt.Errorf("target branch should not equal to current branch:%s", fromBranch)
 	}
+	if !ds.SliceInclude(branches, fromBranch) {
+		return fmt.Errorf("from branch:%s not in all branch", fromBranch)
+	}
+
+	logrus.Infof("2. check merge from branch:%s success", fromBranch)
+	err = utils.GitCheckout(fromBranch)
+	if err != nil {
+		return fmt.Errorf("call git checkout:%s fail", fromBranch)
+	}
+	err = utils.GitPull(fromBranch)
+	if err != nil {
+		logrus.Errorf("call GitPull fail, branch:%s, error:%v", currentBranch, err)
+	} else {
+		err = utils.GitCheckConflict()
+		if err != nil {
+			return terror.Wrap(err, "call GitCheckConflict fail")
+		}
+	}
+	err = utils.GitCheckout(currentBranch)
+	if err != nil {
+		return fmt.Errorf("call git checkout:%s fail", fromBranch)
+	}
+	logrus.Infof("3. call git update from branch:%s success", fromBranch)
 
 	err = utils.GitMerge(fromBranch)
 	if err != nil {
@@ -77,9 +98,7 @@ func (m *MergeFrom) Run(ctx *cli.Context) error {
 	if err != nil {
 		return terror.Wrapf(err, "call GitCheckConflict fail")
 	}
-	err = utils.GitPush(currentBranch)
-	if err != nil {
-		return terror.Wrapf(err, "call GitPush fail, branch:%s", currentBranch)
-	}
+
+	logrus.Infof("3. merge from %s to %s success", fromBranch, currentBranch)
 	return nil
 }

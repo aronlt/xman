@@ -7,9 +7,10 @@ import (
 
 	"github.com/aronlt/toolkit/ds"
 	"github.com/aronlt/toolkit/terror"
-	"github.com/aronlt/xman/component/utils"
 	"github.com/hashicorp/go-version"
 	"github.com/urfave/cli/v2"
+
+	"github.com/aronlt/xman/component/utils"
 )
 
 type Tag struct {
