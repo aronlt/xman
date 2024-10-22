@@ -12,6 +12,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 )
 
 var EmptyBranchErr = errors.New("empty branch error")
@@ -74,6 +75,48 @@ func GitPushTag(tag string) error {
 		return terror.Wrap(err, "call push tag fail")
 	}
 	return nil
+}
+
+func GitTryPullAndCheck() (string, error) {
+	current, err := GitCurrentBranch()
+	if err != nil {
+		return "", terror.Wrap(err, "call GitCurrentBranch fail")
+	}
+	if err = GitCheckDirtyZone(); err != nil {
+		return "", terror.Wrap(err, "can not pull when work dir is dirty")
+	}
+	err = GitPull(current)
+	if err != nil {
+		color.Red("call GitPull fail, branch:%s, error:%v", current, err)
+	} else {
+		err = GitCheckConflict()
+		if err != nil {
+			return "", terror.Wrap(err, "call GitCheckConflict fail")
+		}
+	}
+	return current, nil
+}
+
+func GitSelectBranch(ctx *cli.Context, param string, hint string) (string, error) {
+	current, err := GitCurrentBranch()
+	if err != nil {
+		return "", terror.Wrap(err, "call GitCurrentBranch fail")
+	}
+	branches, err := ListAllBranch()
+	if err != nil {
+		return "", terror.Wrap(err, "call ListAllBranch fail")
+	}
+	branch := ctx.String(param)
+	if branch == "" {
+		branch = GetFromStdio(hint, false, branches...)
+	}
+	if branch == current {
+		return "", fmt.Errorf("target branch should not equal to current branch:%s", branch)
+	}
+	if !ds.SliceInclude(branches, branch) {
+		return "", fmt.Errorf("select branch:%s not in all branch", branch)
+	}
+	return branch, nil
 }
 
 func GitPull(branch string) error {

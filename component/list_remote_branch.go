@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/aronlt/toolkit/terror"
+	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
 
 	"github.com/aronlt/xman/component/utils"
@@ -38,6 +39,6 @@ func (l *ListGitRemoteBranch) Run(_ *cli.Context) error {
 		return terror.Wrapf(err, "call RunCmdWithOutput fail, cmd:%s", cmd)
 	}
 	fmt.Println()
-	fmt.Printf("%s", out)
+	color.Green("%s", out)
 	return nil
 }

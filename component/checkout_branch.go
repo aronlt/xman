@@ -2,6 +2,7 @@ package component
 
 import (
 	"github.com/aronlt/toolkit/terror"
+	"github.com/fatih/color"
 	"github.com/urfave/cli/v2"
 
 	"github.com/aronlt/xman/component/utils"
@@ -24,58 +25,56 @@ func (cb *CheckoutBranch) Usage() string {
 func (cb *CheckoutBranch) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
-			Name:    "branch_name",
-			Aliases: []string{"b"},
+			Name:    "to",
+			Aliases: []string{"t"},
 			Usage:   "切换到的分支名",
 		},
 		&cli.StringFlag{
-			Name:    "checkout_from",
-			Aliases: []string{"cf"},
+			Name:    "from",
+			Aliases: []string{"f"},
 			Usage:   "从特定分支切换出新的分支",
 		},
 	}
 }
 
 func (cb *CheckoutBranch) Run(ctx *cli.Context) error {
-	targetBranch := ctx.String("branch_name")
-	if targetBranch == "" {
+	to := ctx.String("to")
+	if to == "" {
 		branches, err := utils.ListAllBranch()
 		if err != nil {
 			return terror.Wrap(err, "call ListAllBranch fail")
 		}
-		targetBranch = utils.GetFromStdio("切换到的分支", false, branches...)
+		to = utils.GetFromStdio("切换到的分支", false, branches...)
 	}
-	currentBranch, err := utils.GitCurrentBranch()
-	if err != nil {
-		return terror.Wrap(err, "call utils.GitCurrentBranch fail")
-	}
-	err = utils.GitAddAndCommit("临时保存")
+	color.Green("1.Select to branch:%s success", to)
+
+	err := utils.GitAddAll()
 	if err != nil {
 		return terror.Wrap(err, "call GitAddAndCommit fail")
 	}
-	err = utils.PushBranch(currentBranch)
-	if err != nil {
-		return terror.Wrapf(err, "call PushBranch fail, branch:%s", currentBranch)
-	}
-	checkoutFrom := ctx.String("checkout_from")
-	if checkoutFrom == "" {
-		err = utils.GitCheckout(targetBranch)
+
+	color.Green("2.Git add current branch success")
+	from := ctx.String("from")
+	if from == "" {
+		err = utils.GitCheckout(to)
 		if err != nil {
-			return terror.Wrapf(err, "call GitCheckout fail, branch:%s", targetBranch)
+			return terror.Wrapf(err, "call GitCheckout fail, branch:%s", to)
 		}
+		color.Green("3.Checkout to branch:%s success", to)
 		return nil
 	}
-	err = utils.GitCheckout(checkoutFrom)
+	err = utils.GitCheckout(from)
 	if err != nil {
-		return terror.Wrap(err, "call GitCheckout fail, branch:%s", checkoutFrom)
+		return terror.Wrap(err, "call GitCheckout fail, branch:%s", from)
 	}
-	err = utils.PullBranch(checkoutFrom)
+	_, err = utils.GitTryPullAndCheck()
 	if err != nil {
-		return terror.Wrap(err, "call PullBranch fail, branch:%s", checkoutFrom)
+		return terror.Wrap(err, "call GitTryPullAndCheck fail")
 	}
-	err = utils.GitCheckout(targetBranch, true)
+	err = utils.GitCheckout(to, true)
 	if err != nil {
-		return terror.Wrap(err, "call GitCheckout fail, branch:%s", targetBranch)
+		return terror.Wrap(err, "call GitCheckout fail, branch:%s", to)
 	}
+	color.Green("3.Checkout from branch %s to branch:%s success", from, to)
 	return nil
 }

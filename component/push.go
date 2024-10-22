@@ -1,6 +1,8 @@
 package component
 
 import (
+	"github.com/fatih/color"
+
 	"github.com/aronlt/xman/component/utils"
 
 	"github.com/aronlt/toolkit/terror"
@@ -19,7 +21,7 @@ func (p *Push) Name() string {
 }
 
 func (p *Push) Usage() string {
-	return "分支推送"
+	return "编译后再分支推送"
 }
 
 func (p *Push) Flags() []cli.Flag {
@@ -41,10 +43,18 @@ func (p *Push) Run(ctx *cli.Context) error {
 	if err != nil {
 		return terror.Wrap(err, "call utils.GitCurrentBranch fail")
 	}
-	err = utils.RunCmd("go mod tidy")
+	content, err := utils.RunCmdWithOutput("go mod tidy", true)
 	if err != nil {
+		color.Red("call go mod tidy fail, content:%s", content)
 		return terror.Wrap(err, "call go mod tidy fail")
 	}
+	color.Green("1.Go mod tidy success")
+	content, err = utils.RunCmdWithOutput("go build .", true)
+	if err != nil {
+		color.Red("call go build fail, content:%s", content)
+		return terror.Wrap(err, "call go build fail")
+	}
+	color.Green("2.Go build success")
 	commitMsg := ctx.String("commit_msg")
 	review := ctx.Bool("review")
 	if review {
@@ -58,9 +68,11 @@ func (p *Push) Run(ctx *cli.Context) error {
 			return terror.Wrap(err, "call utils.GitAddAndCommit fail")
 		}
 	}
+	color.Green("3.Add and commit success, commit msg:%s", commitMsg)
 	err = utils.PushBranch(currentBranch)
 	if err != nil {
 		return terror.Wrap(err, "call utils.PushBranch fail")
 	}
+	color.Green("4.Push current branch:%s success", currentBranch)
 	return nil
 }

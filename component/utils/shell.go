@@ -75,7 +75,7 @@ func RunCmdWithOutput(cmd string, printLog bool) (string, error) {
 	result := tutils.RunCmd(cmd, env)
 	if result.Error() != nil {
 		if printLog {
-			logrus.Infof("run cmd:%s fail, error:%+v", cmd, result.Error())
+			logrus.Errorf("run cmd:%s fail, error:%+v", cmd, result.Error())
 		}
 		return "", result.Error()
 	}

@@ -20,9 +20,6 @@ xman lint
 
     --dir=true
 
-#### xman mod
-replace dependency go module in go.mod file, auto tidy mod file.
-
 #### xman push
 automatically complete the local code submission and push the git branch to the remote.
 
