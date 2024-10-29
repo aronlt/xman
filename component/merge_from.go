@@ -37,7 +37,7 @@ func (m *MergeFrom) Run(ctx *cli.Context) error {
 		return terror.Wrapf(err, "call GitTryPullAndCheck fail")
 	}
 	color.Green("1.Pull current branch:%s success", current)
-	from, err := utils.GitSelectBranch(ctx, "merge_from", "选择从哪个分支合入")
+	from, err := utils.GitSelectBranch(ctx, "from", "选择从哪个分支合入")
 	if err != nil {
 		return terror.Wrapf(err, "call GitSelectBranch fail")
 	}

@@ -34,7 +34,7 @@ func (m *MergeTo) Flags() []cli.Flag {
 }
 
 func (m *MergeTo) Run(ctx *cli.Context) error {
-	to, err := utils.GitSelectBranch(ctx, "merge_to", "选择要合入的目标分支")
+	to, err := utils.GitSelectBranch(ctx, "to", "选择要合入的目标分支")
 	if err != nil {
 		return terror.Wrap(err, "call GitSelectBranch fail")
 	}
