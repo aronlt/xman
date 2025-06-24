@@ -22,12 +22,9 @@ func Register() []*cli.Command {
 		component.NewStash(),
 		component.NewRecover(),
 		component.NewPush(),
-		component.NewTag(),
-		component.NewLint(),
 		component.NewListGitBranch(),
 		component.NewListGitRemoteBranch(),
 		component.NewListTags(),
-		component.NewListLastCommit(),
 		component.NewCheckoutBranch(),
 	}
 	commands := make([]*cli.Command, 0, len(actions))
