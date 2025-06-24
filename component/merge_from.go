@@ -20,7 +20,7 @@ func (m *MergeFrom) Name() string {
 }
 
 func (m *MergeFrom) Usage() string {
-	return "其他分支合入当前分支"
+	return "其他分支合入当前分支 --f 从哪个分支合入"
 }
 
 func (m *MergeFrom) Flags() []cli.Flag {

@@ -21,14 +21,14 @@ func (m *MergeTo) Name() string {
 }
 
 func (m *MergeTo) Usage() string {
-	return "并到其他分支"
+	return "合并到其他分支， --t 合入的目标分支"
 }
 
 func (m *MergeTo) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:    "to",
-			Aliases: []string{"to"},
+			Aliases: []string{"t"},
 			Usage:   "合入的目标分支",
 		}}
 }

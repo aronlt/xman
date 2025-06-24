@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -88,6 +89,18 @@ func RunCmdWithOutput(cmd string, printLog bool) (string, error) {
 func RunCmd(cmd string) error {
 	_, err := RunCmdWithOutput(cmd, true)
 	return err
+}
+
+func RunShellScript(scriptPath string) error {
+	cmd := exec.Command("bash", scriptPath)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	err := cmd.Run()
+	if err != nil {
+		return terror.Wrapf(err, "failed to run script %s", scriptPath)
+	}
+	return nil
 }
 
 func SimpleGetFromStdio(hint string) string {

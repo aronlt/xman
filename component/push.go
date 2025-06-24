@@ -21,7 +21,7 @@ func (p *Push) Name() string {
 }
 
 func (p *Push) Usage() string {
-	return "编译后再分支推送"
+	return "编译后再分支推送 --m commit提交信息  --r add 确认"
 }
 
 func (p *Push) Flags() []cli.Flag {

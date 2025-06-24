@@ -19,7 +19,7 @@ func (cb *CheckoutBranch) Name() string {
 }
 
 func (cb *CheckoutBranch) Usage() string {
-	return "切换到其他分支"
+	return "切换到其他分支 --t 切换到的分支名 --f 从哪个分支切换"
 }
 
 func (cb *CheckoutBranch) Flags() []cli.Flag {
